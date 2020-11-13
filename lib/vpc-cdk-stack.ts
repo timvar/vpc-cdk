@@ -1,5 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from '@aws-cdk/aws-ec2';
+import * as logs from '@aws-cdk/aws-logs'
+import * as s3 from '@aws-cdk/aws-s3'
 
 export class VpcCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -70,6 +72,35 @@ export class VpcCdkStack extends cdk.Stack {
       ],
     });
 
+    // const pepeFlowLogResource = ec2.FlowLogResourceType.fromVpc(vpc1);
+    const pepeLogGroup = new logs.LogGroup(this, 'pepeLogGroup1', {
+      retention: logs.RetentionDays.INFINITE
+    })
+
+    const pepeBucket = new s3.Bucket(this, 'pepeBucket1', {
+      bucketName: 'pepe-flow-log'
+    })
+
+    vpc1.addFlowLog('pepeFlowLog', {
+      destination: ec2.FlowLogDestination.toCloudWatchLogs(pepeLogGroup)
+    })
+
+    vpc2.addFlowLog('pepeFlowLogS3', {
+      destination: ec2.FlowLogDestination.toS3(pepeBucket)
+    })
+
+    /*
+    new ec2.FlowLog(this, 'pepeFlowLog', {
+      resourceType: {
+        resourceType: pepeFlowLogResource.resourceType,
+        resourceId: pepeFlowLogResource.resourceId
+      },
+      destination: ec2.FlowLogDestination.toCloudWatchLogs({env: {account: "090199979012", region: "eu-west-1"}, logGroupArn: pepeLogGroup.logGroupArn, logGroupName: pepeLogGroup.logGroupName, node: , stack: this}
+
+      }
+      )
+    });
+*/
     /*
 
   // NACL

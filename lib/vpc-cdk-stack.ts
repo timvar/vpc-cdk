@@ -15,6 +15,11 @@ export class VpcCdkStack extends cdk.Stack {
           subnetType: ec2.SubnetType.PUBLIC,
           cidrMask: 24,
         },
+        {
+          name: 'pepePrivate1',
+          subnetType: ec2.SubnetType.ISOLATED,
+          cidrMask: 20,
+        },
       ],
     });
 
@@ -25,6 +30,11 @@ export class VpcCdkStack extends cdk.Stack {
           name: 'pepePublic2',
           subnetType: ec2.SubnetType.PUBLIC,
           cidrMask: 24,
+        },
+        {
+          name: 'pepePrivate2',
+          subnetType: ec2.SubnetType.ISOLATED,
+          cidrMask: 20,
         },
       ],
     });
@@ -41,16 +51,26 @@ export class VpcCdkStack extends cdk.Stack {
     new ec2.CfnRoute(this, 'pepeRoutePeering', {
       routeTableId: vpc1.publicSubnets[0].routeTable.routeTableId,
       vpcPeeringConnectionId: peering.ref,
-      destinationCidrBlock: '10.1.0.0/16'
+      destinationCidrBlock: '10.1.0.0/16',
     });
 
     new ec2.CfnRoute(this, 'pepeRoute2to1', {
       routeTableId: vpc2.publicSubnets[0].routeTable.routeTableId,
       vpcPeeringConnectionId: peering.ref,
-      destinationCidrBlock: '10.0.0.0/16'
+      destinationCidrBlock: '10.0.0.0/16',
     });
 
-  /*
+    new ec2.GatewayVpcEndpoint(this, 'pepeS3', {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
+      vpc: vpc1,
+      subnets: [
+        {
+          subnetType: ec2.SubnetType.ISOLATED,
+        },
+      ],
+    });
+
+    /*
 
   // NACL
 
@@ -97,7 +117,7 @@ export class VpcCdkStack extends cdk.Stack {
     });
 
     // User data
-    
+
     const pepeUserData = ec2.UserData.forLinux()
     pepeUserData.addCommands(
       'sudo yum update',
